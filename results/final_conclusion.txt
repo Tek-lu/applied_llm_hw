@@ -1,0 +1,25 @@
+## Final Conclusions & Recommendations
+
+### Summary Metrics
+
+- **embedding** — Precision: 0.800, Recall: 0.842, F1: 0.821, Accuracy: 0.800
+- **llm** — Precision: 0.625, Recall: 0.263, F1: 0.370, Accuracy: 0.514
+- **rag** — Precision: 0.731, Recall: 1.000, F1: 0.844, Accuracy: 0.800
+- **hybrid_rag** — Precision: 0.905, Recall: 1.000, F1: 0.950, Accuracy: 0.943
+
+### Ablation highlights
+- Best RAG top_k (in our test) = 3 with F1 = 0.844
+- Best Hybrid alpha = 0.8 (embedding weight) with F1 = 0.974
+
+### Trade-offs between retrieval quality, computational cost, context usage, and accuracy
+
+- **Embedding-only**: Low computational cost at inference, fast vector search. Good for quick filtering. Misses lexical cues and sometimes structural refactors.
+- **Direct LLM**: High context usage and API cost; strong reasoning when the corpus fits the model context; not scalable for large corpora.
+- **Standard RAG**: Middle ground — good accuracy with moderate cost. Retrieval determines what LLM sees, so retrieval quality is critical.
+- **Hybrid RAG**: Best accuracy in most cases due to combined lexical + semantic retrieval; higher implementation complexity and slightly higher compute at retrieval time (BM25 + embeddings).
+
+### Recommendations
+- Use embedding-only as a **fast pre-filter**.
+- Use RAG for day-to-day plagiarism checks (k=3–5 based on experiments).
+- Use Hybrid RAG when high accuracy is required (e.g., grading, legal review), and tune alpha (e.g., 0.4–0.6).
+- Use Direct LLM only for small corpora or when you want to do deep reasoning on ambiguous cases.

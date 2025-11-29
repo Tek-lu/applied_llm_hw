@@ -1,0 +1,18 @@
+# Core dependencies
+numpy>=1.21.0,<2.0.0
+sentence-transformers>=2.2.0
+scikit-learn>=1.0.0
+
+# LLM and API
+openai>=1.0.0
+python-dotenv>=0.19.0
+
+# Text processing and retrieval
+rank-bm25>=0.2.2
+
+# Visualization and analysis
+matplotlib>=3.5.0
+
+# Optional but recommended for better performance
+torch>=2.0.0
+transformers>=4.30.0

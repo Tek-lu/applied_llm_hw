@@ -1,0 +1,183 @@
+{
+  "embedding": {
+    "false_positives_count": 4,
+    "false_negatives_count": 3,
+    "fp_by_type": {
+      "unknown": 4
+    },
+    "fn_by_type": {
+      "variable_renaming": 2,
+      "combined_transformations": 1
+    },
+    "fp_examples": [
+      {
+        "id": 15,
+        "label": "non-plagiarized",
+        "query_code": "def djb2_hash(text: str) -> int:\n    hash_val = 5381\n    for char in text:\n        hash_val = ((hash_val << 5) + hash_val) + ord(char)\n    return hash_val",
+        "source_function": "sdbm",
+        "description": "Different hash function (djb2) with different algorithm"
+      },
+      {
+        "id": 17,
+        "label": "non-plagiarized",
+        "query_code": "def capitalize_words(sentence: str) -> str:\n    return sentence.title()",
+        "source_function": "to_title_case",
+        "description": "Uses built-in string method instead of manual character manipulation"
+      },
+      {
+        "id": 24,
+        "label": "non-plagiarized",
+        "query_code": "import requests\nfrom bs4 import BeautifulSoup\n\ndef scrape_job_listings(keyword: str, city: str) -> list[dict]:\n    base_url = f\"https://www.linkedin.com/jobs/search/?keywords={keyword}&location={city}\"\n    page = requests.get(base_url)\n    soup = BeautifulSoup(page.content, 'html.parser')\n    jobs = []\n    for item in soup.find_all('div', class_='job-card'):\n        title = item.find('h3').text\n        company = item.find('h4').text\n        jobs.append({'title': title, 'company': company})\n    return jobs",
+        "source_function": "fetch_jobs",
+        "description": "Different website (LinkedIn), different structure, returns list instead of generator"
+      }
+    ],
+    "fn_examples": [
+      {
+        "id": 21,
+        "label": "plagiarized",
+        "transformation_type": "variable_renaming",
+        "query_code": "import httpx\n\nallowed_fields = set(\"\"\"approved_at_utc approved_by author_flair_background_color\nauthor_flair_css_class author_flair_richtext author_flair_template_id author_fullname\nauthor_premium can_mod_post category clicked content_categories created_utc downs\nedited gilded gildings hidden hide_score is_created_from_ads_ui is_meta\nis_original_content is_reddit_media_domain is_video link_flair_css_class\nlink_flair_richtext link_flair_text link_flair_text_color media_embed mod_reason_title\nname permalink pwls quarantine saved score secure_media secure_media_embed selftext\nsubreddit subreddit_name_prefixed subreddit_type thumbnail title top_awarded_type\ntotal_awards_received ups upvote_ratio url user_reports\"\"\".split())\n\ndef fetch_subreddit(sub: str, count: int = 1, sort: str = \"new\", fields: list | None = None) -> dict:\n    fields = fields or []\n    if invalid := \", \".join(sorted(set(fields) - allowed_fields)):\n        msg = f\"Invalid search term: {invalid}\"\n        raise ValueError(msg)\n    resp = httpx.get(\n        f\"https://www.reddit.com/r/{sub}/{sort}.json?limit={count}\",\n        headers={\"User-agent\": \"A random string\"},\n        timeout=10,\n    )\n    resp.raise_for_status()\n    if resp.status_code == 429:\n        raise httpx.HTTPError(response=resp)\n    result = resp.json()\n    if not fields:\n        return {i: result[\"data\"][\"children\"][i] for i in range(count)}\n    output = {}\n    for i in range(count):\n        output[i] = {item: result[\"data\"][\"children\"][i][\"data\"][item] for item in fields}\n    return output",
+        "source_function": "get_subreddit_data",
+        "description": "Variable renaming: valid_terms->allowed_fields, subreddit->sub, limit->count, age->sort, wanted_data->fields, response->resp, data->result, data_dict->output"
+      },
+      {
+        "id": 27,
+        "label": "plagiarized",
+        "transformation_type": "combined_transformations",
+        "query_code": "def bt(s: str, wd: set[str], st: int) -> bool:\n    if st == len(s): return True\n    for e in range(st + 1, len(s) + 1):\n        if s[st:e] in wd and bt(s, wd, e): return True\n    return False\n\ndef wb(s: str, wd: set[str]) -> bool:\n    return bt(s, wd, 0)",
+        "source_function": "word_break",
+        "description": "Extreme variable shortening + comment removal + single-line formatting"
+      },
+      {
+        "id": 33,
+        "label": "plagiarized",
+        "transformation_type": "variable_renaming",
+        "query_code": "def compute_missing(vals: list[int]) -> int:\n    min_val = min(vals)\n    max_val = max(vals)\n    ans = max_val\n    for j in range(min_val, max_val):\n        ans ^= j ^ vals[j - min_val]\n    return ans",
+        "source_function": "find_missing_number",
+        "description": "Variable renaming: nums->vals, low->min_val, high->max_val, missing_number->ans, i->j"
+      }
+    ]
+  },
+  "llm": {
+    "false_positives_count": 3,
+    "false_negatives_count": 14,
+    "fp_by_type": {
+      "unknown": 3
+    },
+    "fn_by_type": {
+      "variable_renaming": 5,
+      "structure_reordering": 2,
+      "minor_refactoring": 3,
+      "comment_removal_and_whitespace": 1,
+      "variable_renaming_and_comment_removal": 1,
+      "combined_transformations": 2
+    },
+    "fp_examples": [
+      {
+        "id": 14,
+        "label": "non-plagiarized",
+        "query_code": "def find_missing_in_sequence(arr: list[int]) -> int:\n    n = len(arr)\n    total = (n + 1) * (arr[0] + arr[-1]) // 2\n    return total - sum(arr)",
+        "source_function": "find_missing_number",
+        "description": "Uses arithmetic sum formula instead of XOR approach"
+      },
+      {
+        "id": 24,
+        "label": "non-plagiarized",
+        "query_code": "import requests\nfrom bs4 import BeautifulSoup\n\ndef scrape_job_listings(keyword: str, city: str) -> list[dict]:\n    base_url = f\"https://www.linkedin.com/jobs/search/?keywords={keyword}&location={city}\"\n    page = requests.get(base_url)\n    soup = BeautifulSoup(page.content, 'html.parser')\n    jobs = []\n    for item in soup.find_all('div', class_='job-card'):\n        title = item.find('h3').text\n        company = item.find('h4').text\n        jobs.append({'title': title, 'company': company})\n    return jobs",
+        "source_function": "fetch_jobs",
+        "description": "Different website (LinkedIn), different structure, returns list instead of generator"
+      },
+      {
+        "id": 25,
+        "label": "non-plagiarized",
+        "query_code": "import requests\n\ndef get_reddit_posts(subreddit_name: str, post_limit: int = 10) -> list[dict]:\n    url = f\"https://api.reddit.com/r/{subreddit_name}/hot.json\"\n    headers = {'User-Agent': 'MyApp/1.0'}\n    response = requests.get(url, headers=headers, params={'limit': post_limit})\n    if response.ok:\n        return [post['data'] for post in response.json()['data']['children']]\n    return []",
+        "source_function": "get_subreddit_data",
+        "description": "Different implementation using requests library, simpler structure, returns list"
+      }
+    ],
+    "fn_examples": [
+      {
+        "id": 1,
+        "label": "plagiarized",
+        "transformation_type": "variable_renaming",
+        "query_code": "def helper_func(s: str, words: set[str], idx: int) -> bool:\n    if idx == len(s):\n        return True\n    for finish in range(idx + 1, len(s) + 1):\n        if s[idx:finish] in words and helper_func(s, words, finish):\n            return True\n    return False\n\ndef check_word_break(s: str, words: set[str]) -> bool:\n    return helper_func(s, words, 0)",
+        "source_function": "word_break",
+        "description": "Variable names changed: backtrack->helper_func, input_string->s, word_dict->words, start->idx, end->finish"
+      },
+      {
+        "id": 2,
+        "label": "plagiarized",
+        "transformation_type": "structure_reordering",
+        "query_code": "def word_break(input_string: str, word_dict: set[str]) -> bool:\n    return backtrack(input_string, word_dict, 0)\n\ndef backtrack(input_string: str, word_dict: set[str], start: int) -> bool:\n    if start == len(input_string):\n        return True\n    for end in range(start + 1, len(input_string) + 1):\n        if input_string[start:end] in word_dict and backtrack(input_string, word_dict, end):\n            return True\n    return False",
+        "source_function": "word_break",
+        "description": "Functions reordered: main function placed before helper function"
+      },
+      {
+        "id": 3,
+        "label": "plagiarized",
+        "transformation_type": "minor_refactoring",
+        "query_code": "def binary_xor(a: int, b: int) -> str:\n    if a < 0 or b < 0:\n        raise ValueError(\"the value of both inputs must be positive\")\n    a_bin = str(bin(a))[2:]\n    b_bin = str(bin(b))[2:]\n    length = max(len(a_bin), len(b_bin))\n    result = \"\"\n    for i, j in zip(a_bin.zfill(length), b_bin.zfill(length)):\n        result += str(int(i != j))\n    return \"0b\" + result",
+        "source_function": "binary_xor",
+        "description": "Minor refactoring: loop converted to explicit string concatenation, variable names shortened"
+      }
+    ]
+  },
+  "rag": {
+    "false_positives_count": 7,
+    "false_negatives_count": 0,
+    "fp_by_type": {
+      "unknown": 7
+    },
+    "fn_by_type": {},
+    "fp_examples": [
+      {
+        "id": 12,
+        "label": "non-plagiarized",
+        "query_code": "def xor_numbers(x: int, y: int) -> int:\n    if x < 0 or y < 0:\n        raise ValueError(\"Inputs must be positive\")\n    return x ^ y",
+        "source_function": "binary_xor",
+        "description": "Uses built-in XOR operator instead of manual binary manipulation"
+      },
+      {
+        "id": 15,
+        "label": "non-plagiarized",
+        "query_code": "def djb2_hash(text: str) -> int:\n    hash_val = 5381\n    for char in text:\n        hash_val = ((hash_val << 5) + hash_val) + ord(char)\n    return hash_val",
+        "source_function": "sdbm",
+        "description": "Different hash function (djb2) with different algorithm"
+      },
+      {
+        "id": 16,
+        "label": "non-plagiarized",
+        "query_code": "def complement_dna(sequence: str) -> str:\n    complement = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}\n    if not all(base in complement for base in sequence):\n        raise ValueError(\"Invalid DNA sequence\")\n    return ''.join(complement[base] for base in sequence)",
+        "source_function": "dna",
+        "description": "Uses dictionary mapping instead of translate method"
+      }
+    ],
+    "fn_examples": []
+  },
+  "hybrid_rag": {
+    "false_positives_count": 2,
+    "false_negatives_count": 0,
+    "fp_by_type": {
+      "unknown": 2
+    },
+    "fn_by_type": {},
+    "fp_examples": [
+      {
+        "id": 15,
+        "label": "non-plagiarized",
+        "query_code": "def djb2_hash(text: str) -> int:\n    hash_val = 5381\n    for char in text:\n        hash_val = ((hash_val << 5) + hash_val) + ord(char)\n    return hash_val",
+        "source_function": "sdbm",
+        "description": "Different hash function (djb2) with different algorithm"
+      },
+      {
+        "id": 17,
+        "label": "non-plagiarized",
+        "query_code": "def capitalize_words(sentence: str) -> str:\n    return sentence.title()",
+        "source_function": "to_title_case",
+        "description": "Uses built-in string method instead of manual character manipulation"
+      }
+    ],
+    "fn_examples": []
+  }
+}
