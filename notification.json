@@ -1,0 +1,12 @@
+{
+    "LambdaFunctionConfigurations": [
+      {
+        "Id": "S3ToLambdaInvoke",
+        "LambdaFunctionArn": "arn:aws:lambda:us-east-1:893994910439:function:s3-upload-logger",
+        "Events": [
+          "s3:ObjectCreated:*"
+        ]
+      }
+    ]
+  }
+  
